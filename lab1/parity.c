@@ -10,11 +10,12 @@
 
 int compute_parity(int x)
 {
-    int result;
-
+    int result=0;
     while (x != 0) {
-        result ^= (x & 1);  // invert result if lsb is on
+        result = (result ^ (~x & 1));  // invert result if lsb is on
+        printf("result is %d\n", result);
         x = x >> 1;         // shift bits down
+        printf("x is %d\n", x);
     }
     return result;
 }

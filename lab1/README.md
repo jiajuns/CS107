@@ -28,3 +28,13 @@ When the second value is the power of 2:
 Then when val is smaller than `mult`, it will only modify the elements where are zeros. After doing and operation, the result will be `0100000`, which is `mult`； when `val` is eqaul or larger than `mult`, `val + mult -1` has the form like `1*******`, all the bits marked as `*` are not relevent after AND operation. The result will be the next value that is twice as big as `mult` or equal to its value.
 
 ## Midpoint
+Here I only show the final version of midpoint algorithm, since other methods are easy to understand.
+```
+int mid_C(int x. int y){
+    return (x & y) + ((x ^ y) >> 1);
+}
+```
+`x & y` pulls udentify which power of 2 contained in both x and y. Those power of 2 bits will remain the same in the midpoint integer. `(x ^ y) >> 1` will pulls out the different power of 2 for x and y. After being dvided, those different power of 2 will shift to the left by 1. Then after added these two parts together, the result is the midpoint value.
+
+## Parity
+The result is in the code.

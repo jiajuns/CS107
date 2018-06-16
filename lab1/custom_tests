@@ -1,0 +1,23 @@
+# File: custom_tests
+# ------------------
+# This file contains a list of custom tests to be run by the sanity check tool.
+# Each custom test is given on a single line using format:
+#
+#     executable  arg(s)
+#
+# The executable is the name of the program to run.
+# The args are optional. If given, they are treated as a sequence of space-separated
+# command-line arguments with which to invoke the executable program.
+#
+# For each custom test, sanity check will invoke your executable program and the
+# solution program (using same command-line arguments), compare the two
+# outputs to verify if they match, and report the outcome.
+#
+# Blank lines and comment lines beginning with # are ignored.
+#
+# Below are example custom test, you can edit this file to change or add new tests.
+
+parity 1025
+parity 2147483647
+parity -1
+

@@ -1,0 +1,20 @@
+# default .gitignore for student git repos
+# mchang & jzelenski September 2017
+
+# no track object files, vim swapfiles, emacs backup/tmp files
+# compiled soln files
+# these patterns have no anchor so as to match anywhere
+*.o
+.*.sw?
+*~
+.\#*
+\#*
+
+
+# explicitly name project executables here, soln executables too
+# do anchor to top-level dir
+/code
+/sat
+/automata
+/utf8
+/*_soln

@@ -1,0 +1,34 @@
+# File: custom_tests
+# ------------------
+# This file contains a list of custom tests to be run by the sanity check tool.
+# Refer to http://cs107.stanford.edu/sanitycheck.html for more information.
+#
+# Below are example custom tests, you can edit this file to change or add new tests.
+
+sat 3
+sat 4
+sat 5
+sat 32
+sat 63
+sat 64
+sat 65
+sat 4 2 3 
+sat 4 5 7 
+sat 4 -2 -5
+sat 8 126 5
+sat 8 126 1
+sat 16 -32768 -32768
+sat 64 -9223372036854775805 -9223372036854775806
+sat 64 9223372036854775805 9223372036854775806
+sat 64 92233720368547758 92233720368547758
+sat 64 -92372036854775805 -92233720368775806
+
+automata 90
+automata 111
+automata 77
+automata 67
+automata 44
+automata 12
+automata 1
+
+utf8 0x20AC 0x1234 0x56 0x8888 0xaaaa 0x88 0x66

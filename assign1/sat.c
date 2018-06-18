@@ -15,20 +15,17 @@ long signed_min(int bitwidth)
     return ~0L << (bitwidth - 1);
 }
 
-long sat_add(long a, long b, int bitwidth)
-{
-    long sum = a + b;
-    // if a > 0 and b > 0 and 1 at a+b [bitwidth] bit (00000001xxxxx)
-    if (((a & (1L << 63)) == 0) & ((b & (1L << 63)) == 0) & (((1L << (bitwidth-1)) & sum) != 0 )) {
+long sat_add(long operand1, long operand2, int bitwidth){
+    long sum = operand1 + operand2;
+    if ((((1L << 63) & sum) == 0) & (((1L << (bitwidth-1)) & sum) != 0)){
         return signed_max(bitwidth);
     }
-    //if a < 0 and b < 0 and 0 at a+b [bitwidth] bit (1111110xxxxx)
-    if (((a & (1L << 63)) != 0) & ((b & (1L << 63)) != 0) & (((1L << (bitwidth-1)) & sum) == 0 ))  { 
+
+    if ((((1L << 63) & sum) != 0) & (((1L << (bitwidth-1)) & sum) == 0)){
         return signed_min(bitwidth);
     }
     return sum;
 }
-
 
 
 

@@ -4,7 +4,7 @@
 
 The answer for this section is in `round.c`
 ### is_power_of_2
-```
+```c
 bool is_power_of_2(unsigned int x){
     return (x & (x - 1)) == 0;
 }
@@ -15,12 +15,12 @@ If a integer is a power of 2, it bits representation has the form like this `100
 This program is to round up the first number to be nearest multiple of the second number.
 
 When the second value is not the power of 2:
-```
+```c
     return ((val + mult -1) / mult) * mult;
 ```
 
 When the second value is the power of 2:
-```
+```c
     return ((val + mult -1) & ~(mult -1));
 ```
 `mult -1` has form of `0011111`, then `~(mult -1)` has form of `1100000`. This means all the bits where `mult` has value will be converted to 0 and the first element of `mult` will be keeped as 1.
@@ -29,7 +29,7 @@ Then when val is smaller than `mult`, it will only modify the elements where are
 
 ## Midpoint
 Here I only show the final version of midpoint algorithm, since other methods are easy to understand.
-```
+```c
 int mid_C(int x. int y){
     return (x & y) + ((x ^ y) >> 1);
 }

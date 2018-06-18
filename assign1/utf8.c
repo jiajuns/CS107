@@ -5,27 +5,22 @@
 #include <stdlib.h>
 
 
-
-int to_utf8(unsigned short cp, unsigned char seq[])
-{
-    // determine num of sigbits in cp, thus decides num of bytes
-    // fill bits into bytes, then feed in seq[]
-    if (cp >> 7 == 0) {
+int to_utf8(unsigned short cp, unsigned char seq[]){
+    //if sigbits are less than 7
+    if (cp >> 7 == 0){
         seq[0] = cp;
         return 1;
-    } else if (cp >> 11 ==0){
+    } else if (cp >> 11 == 0){
         seq[0] = (1 << 7) + (1 << 6) + (cp >> 6);
         seq[1] = (1 << 7) + (cp & 0x3f);
         return 2;
     } else {
-        seq[0] = 0xe0 + (cp >> 12);
+        seq[0] = (1 << 7) + (1 << 6) + (1 << 5) + (cp << 12);
         seq[1] = (1 << 7) + ((cp >> 6) & 0x3f);
-        seq[2] = (1 << 7) + (cp & 0x3f);
+        seq[2] = (1 << 7) + ((cp >> 6) & 0x3f);
         return 3;
     }
 }
-
-
 
 
 // ------- DO NOT EDIT ANY CODE BELOW THIS LINE (but do add comments!)  -------
@@ -55,7 +50,7 @@ unsigned short convert_arg(const char *str, unsigned short low, unsigned short h
 int main(int argc, char *argv[])
 {
     if (argc < 2) 
-        error(1, 0, "Missing argument. Please supply one or more unicode code points in decimal or hex.");
+        error(1, 0, "Missing argument. Plese supply one or more unicode code points in decimal or hex.");
     
     for (int i = 1; i < argc; i++) {
         unsigned short cp = convert_arg(argv[i], 0, USHRT_MAX);

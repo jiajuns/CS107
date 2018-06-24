@@ -16,16 +16,16 @@
 unsigned long advance(unsigned long cur_gen, unsigned char ruleset)
 {
     unsigned long new_gen = 0;
-    for (int i = 0; i < 64; i++) {
-        // find 3-bits neighbor of cur_gen
-        int cur = ((cur_gen & (1L << i)) != 0);
-        int left = (i == 63) ? 0 : ((cur_gen & (1L << (i+1))) != 0);
-        int right = (i == 0) ? 0 : ((cur_gen & (1L << (i-1))) != 0);
-        int neighbor = (left << 2) + (cur << 1) + right;
+    for (int i=0; i<=63; i++)
+    {
+        int cur = (cur_gen & (1L << i)) != 0;
+        int left = (i != 0) & ((cur_gen & (1L << (i+1))) != 0);
+        int right = (i != 63) & ((cur_gen & (1L << (i-1))) != 0);
 
-        // find the value at the location 3-bits in ruleset
-        if ((ruleset & (1 << neighbor)) != 0) { // value == 1
-            new_gen += (1L << i); // add 1 bit at ith location
+        int nbhood = right + (left << 2) + (cur << 1);
+        if ((ruleset & (1L << nbhood)) != 0)
+        {
+            new_gen += (1L << i);
         }
     }
 
@@ -34,14 +34,15 @@ unsigned long advance(unsigned long cur_gen, unsigned char ruleset)
 
 void draw_generation(unsigned long gen)
 {
-    // each cell in gen is drawn as LIVE_STR or EMPTY_STR depending on whether cell is on or off
-    for (int i = 0; i < 64; i++) {
-        if (((1L << (63-i)) & gen)  == 0) {
+    for (int i=0; i<=63; i++)
+    {
+        if ((gen & (1L << i)) != 0){
             printf(EMPTY_STR);
         } else {
             printf(LIVE_STR);
         }
     }
+
     printf("\n");
 }
 

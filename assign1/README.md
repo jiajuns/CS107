@@ -35,7 +35,47 @@ long sat_add(long operand1, long operand2, int bitwidth){
 The logic of this function is to return sum value directly if it dose not overflow or underflow. If overflow or underflow then return the max and min value respectively. In order to tell whether the value overflow or not, here I do a `&` operation between `sum` and `2^(bitwidth+1)-1`. This will tell me whether the value has overflow to the next bit position. The same logic can be applied for underflow.
 
 ## Cellular automata
-This question requires a lot of reading, lets skip it for now
+The rule of cellular automata problem is defined as a 8 bit integer. There are 8 different neighborhood combinations. `000`, `001`,`010`,`011`,`100`,`101`,`110`,`111`. 
+
+This program has two main functions: the `advance` function advances the generation forward one iteration; and the `draw_generation` function outputs a row of 64 characters, one for each cell.
+
+```c
+unsigned long advance(unsigned long cur_gen, unsigned char ruleset)
+{
+    unsigned long new_gen = 0;
+    for (int i=0; i<=63; i++)
+    {
+        int cur = (cur_gen & (1L << i)) != 0;
+        int left = (i != 0) & ((cur_gen & (1L << (i+1))) != 0);
+        int right = (i != 63) & ((cur_gen & (1L << (i-1))) != 0);
+
+        int nbhood = right + (left << 2) + (cur << 1);
+        if (ruleset & (1L << nbhood) != 0)
+        {
+            new_gen += (1 << i)
+        }
+    }
+
+    return new_gen;
+}
+
+```
+
+```c
+void draw_generation(unsigned long gen)
+{
+    for (int i=0; i<=63, i++)
+    {
+        if (gen & (1L << i) != 0){
+            printf(EMPTY_STR);
+        } else {
+            printf(LIVE_STR);
+        }
+    }
+
+    printf("\n");
+}
+```
 
 ## UTF-8
 ```c

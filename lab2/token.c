@@ -42,8 +42,8 @@ int main(int argc, char *argv[])
     char copy[100];
     strcpy(copy, str);
 
-    //first = musl_strtok(str, "-");   // attempt to tokenize string constant fails at runtime. Why?
-    first = musl_strtok(copy, "-");  // but ok to tokenize copy. Why? What's different?
+    first = musl_strtok(str, "-");   // attempt to tokenize string constant fails at runtime. Why?
+    // first = musl_strtok(copy, "-");  // but ok to tokenize copy. Why? What's different?
     printf("First token is %s\n", first);
 
     return 0;

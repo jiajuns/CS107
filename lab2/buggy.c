@@ -14,6 +14,8 @@ void make_error_1(void)
 {
     printf("--- Making error 1: strlen called on uninitialized pointer\n\n");
     char *uninitialized_ptr;
+    char m = 'a';
+    uninitialized_ptr = &m;
    
     printf("strlen(uninitialized_ptr) = %zu\n", strlen(uninitialized_ptr));
 }
@@ -22,8 +24,9 @@ void make_error_2(void)
 {
     printf("--- Making error 2: strlen called on string without null terminator\n\n");
 
-    char stackarr[10];
+    char stackarr[3];
     strncpy(stackarr, "Stanford", 3); 
+    stackarr[sizeof(stackarr)-1] = '\0';
     printf("strlen(non-terminated) = %zu\n", strlen(stackarr)); 
 }
 
@@ -31,7 +34,7 @@ void make_error_3(void)
 {
     printf("--- Making error 3: strcpy called on dst that is too small\n\n");
 
-    char *dst = malloc(5);
+    char *dst = malloc(9);
     strcpy(dst, "Stanford");
     printf("strcpy(toosmall, \"Stanford\") = %s\n", dst);
 }

@@ -24,9 +24,9 @@ void make_error_2(void)
 {
     printf("--- Making error 2: strlen called on string without null terminator\n\n");
 
-    char stackarr[3];
+    char stackarr[10];
     strncpy(stackarr, "Stanford", 3); 
-    stackarr[sizeof(stackarr)-1] = '\0';
+    stackarr[3] = '\0';
     printf("strlen(non-terminated) = %zu\n", strlen(stackarr)); 
 }
 

@@ -1,0 +1,25 @@
+# File: custom_tests
+# ------------------
+# This file contains a list of custom tests to be run by the sanity check tool.
+# Refer to http://cs107.stanford.edu/sanitycheck.html for more information.
+#
+# Below are example custom tests, you can edit this file to change or add new tests.
+
+myprintenv HOME
+myprintenv XDG_SESSION_ID
+myprintenv KRB5CCNAME AAA
+myprintenv SSH_CONNECTION
+myprintenv SHLVL PWD
+
+
+tokenize ", " "red, green, blue,orange, yellow"
+tokenize "-" "super-duper-awesome-magnificent"
+tokenize " " "super-duper-awesome-magnificent"
+tokenize "-" ""
+tokenize "-" "super-duper--awesome-magnificent"
+
+mywhich
+mywhich ls cd mkdir
+mywhich vim emacs
+mywhich submit
+mywhich grep

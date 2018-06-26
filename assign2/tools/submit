@@ -1,0 +1,149 @@
+#!/usr/bin/python2
+
+"""
+Julie Zelenski, Nate Hardison, Michael Chang 2009-present
+
+Submit program to verify project validity, submit for grading.
+"""
+
+import base_student_tool
+import commands, datetime, os, shutil, sys
+import course, gen, git, manifest, ui, uid, util
+from common import *
+from repos import Repo
+
+BANNER = '-'*30
+
+def verify_build(local_git):
+    # clone into tmp dir, make and verify success, then delete clone
+    # by using clone will catch dependencies on files not correctly added to repo
+    print "Verifying there are no build errors...",
+    tmpdir = local_git.make_tmp_clone()
+    status, output = commands.getstatusoutput("cd %s && make clean && make" % tmpdir)
+    shutil.rmtree(tmpdir)
+    if status != 0:
+        print "\n\n%s\n%s\n%s\n%s\n" % (ui.red("Your project had the following build errors:"), BANNER, output, BANNER)
+        ui.exit_done("You must first resolve build errors, then re-run submit.")
+    print "OK"
+
+def verify_text_files(local_git, names):
+    # diff txt file with original version in starter, alert user if not edited much, remind to save/commit
+    unchanged = [n for n in names if local_git.file_is_largely_unchanged(n)]
+    if len(unchanged) > 0:
+        not_edited = "\nHmm... your files %s have suspiciously few changes from the starter.\nIf this is an oversight, stop here, save changes, then re-run submit." % ui.pretty_list(unchanged)
+        print ui.red(not_edited)
+        ui.confirm_or_exit("Continue submit anyway?", default="n")
+
+def verify_sanitycheck(path, reponame):
+    print "We recommend verifying your output is conformant using sanity check."
+    if ui.get_yes_or_no("Would you like to run sanity check right now?"):
+        (nfailures, nrun) = manifest.run_sanity_check(path, reponame)
+        if nfailures != 0:
+            sanity_fail = "\nThis submission does not pass all of sanity check.\nWe recommend that you stop here and resolve these issues before submitting."
+            print ui.red(sanity_fail)
+            ui.confirm_or_exit("Continue submit anyway?", default="n")
+        else:
+            print "\nThis submission passes sanity check, continuing with submit."
+    print
+
+def verify_deadline(whensubmit, submitname):
+    use_grace = course.late_policy(submitname) == "grace"
+    (due, endgrace) = course.duedate_for(submitname)
+    if use_grace:
+        allowed = ("grace period until %s" % ui.niceduedate(endgrace)) if endgrace else "No grace period"
+    else:
+        allowed = ("late submissions accepted until %s" % ui.niceduedate(endgrace)) if endgrace else "No late submissions accepted"
+    print "The deadline for %s is %s.\n(%s)" % (submitname, ui.niceduedate(due), allowed)
+    status = course.check_submit_lateness(submitname, whensubmit)
+    if status == course.ON_TIME:
+        print "This submission is on-time!"
+    elif status == course.IN_GRACE:
+        if use_grace:
+            print "This submission is late, but within the grace period."
+        else:
+            nlate = course.compute_late_days(submitname, whensubmit)
+            print "This submission is %d day%s late." % (nlate, "s" if nlate != 1 else "")
+    else:
+        ui.exit_done("Submissions have closed for %s. This submission will not be accepted." % submitname)
+
+def confirm_forced():
+    print ui.red("\nSubmit was invoked in forced mode. This should only be used with staff approval.")
+    ui.confirm_or_exit("Continue forced submission?")
+
+def get_partner(submitter):
+    # returns partner or None, verifies valid sunet and not same as submitter
+    if not ui.get_yes_or_no("Did you work with a partner on this assignment?"):
+        return None
+    while True:
+        partner = ui.get_input("Enter your partner's sunet id (login name, not number): ")
+        if not partner:
+            return None
+        if partner == submitter:
+            print "That's _your_ sunet, we need your partner's sunet. Please try again."
+        elif not uid.is_valid_username(partner):
+            print "%s is not recognized as a valid sunet id. Please try again." % partner
+        else:
+            return partner.lower()
+
+
+# -----------------------------------------------------------------
+# Main function: submit
+# -----------------------------------------------------------------
+
+if __name__ == "__main__":
+    flags = [("-f","isforced",False)]
+    op = util.OptionParser(flags)
+    try:
+        (args, remaining) = op.process_options(sys.argv[1:])
+        asserts.usage(not remaining, "unexpected arguments '%s'" % ' '.join(remaining))
+    except UsageError as ex:
+        ui.exit_error("Incorrect %s usage: %s" % (os.path.basename(sys.argv[0]), str(ex)))
+
+    print "This tool submits the repo in the current directory for grading."
+    now = datetime.datetime.now()
+    timestr = ui.timetag(now)
+    sunet = gen.username()
+    local_git = git.Git(os.getcwd())
+    print "Current directory is " + gen.shortpath(local_git.path)
+    reponame = local_git.read_reponame()
+    if not local_git.is_valid():
+        err = "Directory %s does not contain a valid course repo." % local_git.path
+        ui.exit_done("%s\nPlease change to your project directory and re-run submit." % err)
+
+    info = course.assign_info(reponame)
+    if not info:
+        ui.exit_done("Submission is not enabled for %s." % reponame)
+
+    if args.isforced: confirm_forced()
+
+    dst_path = Repo.push_path(reponame, sunet)
+    if not os.path.exists(dst_path):
+        raise Exception("There is no %s class repo for %s/%s" % (gen.COURSE.lower(), reponame, sunet))
+
+    # update metadata re: partner
+    if info.canpartner:
+        partner = get_partner(sunet)
+        local_git.write_partner(partner)  # create/overwrite file for partner, remove any previous file f None
+        users = (sunet + '_' + partner) if partner else sunet  # both names joined to identify
+    else:
+        users = sunet
+
+    # first things first: commit and push
+    if local_git.is_locked(): local_git.unlock()
+    local_git.add_modified()
+    local_git.commit_allow_empty("Initiated %ssubmit, %s %s" % ("forced " if args.isforced else "", users, timestr))
+    local_git.auto_push(dst_path)
+
+    # now: validate submission for success
+    if info.checkcompile: verify_build(local_git)
+    if info.checkedited: verify_text_files(local_git, info.checkedited)
+    if manifest.sanity_check_exists(reponame): verify_sanitycheck(local_git.path, reponame)
+    if not args.isforced:
+        verify_deadline(now, reponame)
+    else:
+        util.send_mail(gen.EMAIL_SENDER, gen.STAFF_EMAIL, dst_path, subject="FORCED SUBMIT %s %s" % (users, reponame))
+
+    local_git.tag_submit(timestr, args.isforced)
+    local_git.auto_push(dst_path)
+
+    print "\nCOMPLETED: %s submitted %s %s." % (sunet, reponame, ui.niceduedate(now))

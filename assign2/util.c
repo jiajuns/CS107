@@ -4,9 +4,13 @@
 
 const char *get_env_value(const char *envp[], const char *key)
 {
-    int n = strlen(key);
+    // int n = strlen(key);
+    char target[strlen(key)+1];   // array to hold the result.
+    strcpy(target, key);
+    strcat(target, "=");
+    int n = strlen(target);
     for (int i = 0; envp[i] != NULL; i++) {
-        if ((strncmp(envp[i], key, n) == 0) && (strcspn(envp[i], "=") == n)) {
+        if ((strncmp(envp[i], target, n) == 0)) {
             return strchr(envp[i], '=') + 1;
         }
     }

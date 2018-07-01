@@ -17,7 +17,6 @@ const char *get_env_value(const char *envp[], const char *key)
     return NULL;
 }
 
-
 // bool scan_token(const char **p_input, const char *delimiters, char buf[], size_t buflen)
 // {   
 //     if (!**p_input) return false;

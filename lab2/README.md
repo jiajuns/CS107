@@ -16,4 +16,3 @@ The second bug caused by null-terminators error. When initializing string withou
 
 The third bug is caused by strcpy called on dst that is too small. The string requires `n+1` bits to store a string.
 
-## 

@@ -1,0 +1,24 @@
+# File: custom_tests
+# ------------------
+# This file contains a list of custom tests to be run by the sanity check tool.
+# Refer to http://cs107.stanford.edu/sanitycheck.html for more information.
+#
+# Below are example custom tests, you can edit this file to change or add new tests.
+
+mycat samples/names
+mycat samples/colors
+mycat samples/dictionary
+mycat mytail.c
+mycat util.c
+
+mytail Makefile
+mytail -4 Makefile
+mytail -50 Makefile
+mytail -5 samples/sanity.py
+mytail -7 samples/prototypes.h
+
+myuniq samples/colors
+myuniq samples/dictionary
+myuniq samples/prototypes.h
+myuniq Makefile
+myuniq util.c

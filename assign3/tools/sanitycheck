@@ -1,0 +1,121 @@
+#!/usr/bin/python2
+
+"""
+Julie Zelenski, Ryan Noon, Michael Chang 2009-present
+
+Sanity check compares student program to sample on simple conformance tests.
+Has custom option for students to define their own custom test cases.
+"""
+
+import base_student_tool
+import commands, os, sys
+import course, gen, git, hooks, manifest, results, testing, ui, util
+from common import *
+from repos import Repo
+
+
+def parse_custom_test_file(fname, reponame):
+    custom_template = manifest.custom_template(reponame, usemaster=args.mastermanifest)
+    if not custom_template:
+        ui.exit_done("Cannot run custom test cases from file '%s' (no custom sanity check available for %s)." % (fname, reponame))
+
+    content = util.read_file(fname)      # verify file is readable and text format
+    if content is None:
+        ui.exit_done("Unable to read custom test cases from file '%s' (file not found or cannot be read)." % fname)
+    if "text/" not in commands.getoutput("file -b --mime %s" % fname):
+        ui.exit_done("Unable to read custom test cases from file '%s' (file does not contain text)." % fname)
+
+    print "Reading custom test cases from file '%s'..." % fname,
+    # verify each line is valid format for test case
+    numbered_lines = [(n+1, line) for (n, line) in enumerate(content.split('\n')) if not (line.strip() == '' or line.strip().startswith("#"))]  # remove empty/comment lines
+    custom_tests = []
+    for (n, line) in numbered_lines:
+        try:
+            t = manifest.create_custom_sanity_test(custom_template, line, len(custom_tests)+1)
+            custom_tests.append(t)
+        except Exception as e:
+            print ui.red("\n\nRejected line %d '%s' (%s)" % (n, line, str(e)))
+            print "  Each custom test case must be a single line in the following format:"
+            print "      executable arg(s)"
+            print "  executable is the name of the program to run (e.g. mywhich or mygrep)"
+            print "  args are optional, if present, these are passed on command-line when invoking executable"
+            ui.exit_done("Fix error(s) in custom test file '%s' and re-run custom sanitycheck." % fname)
+
+    if not custom_tests:
+        ui.exit_done("No custom test cases found in file '%s'." % fname)
+    else:
+        print "found %d test cases." % len(custom_tests)
+    si = hasattr(custom_template, "soln_irrelevant")
+    return (custom_tests, si)
+
+def validate_custom_tests(custom_tests, path):
+
+    # JDZ FIXME default is make clean && make but that would remove _soln and not rebuild
+    # instead make all soln but no guarantee that target "soln" exists in Makefile?
+    build = testing.BuildClean({"command": "make"})
+    build.run(path, testing.FOR_SANITY)
+    print "\nExecuting your custom test cases against solution...",
+    for t in custom_tests:
+        try:
+            t.execute_solution(path)
+        except testing.SolutionError as e:
+            # forgot to make/make soln? (perhaps solved by new forced BuildClean)
+            # test case is malformed?
+            # bug in our solution?
+            print "\n\nInvalid custom test case: %s" % t.command_for_display()
+            ui.exit_done("SolutionError: " + str(e))
+    print "done."
+
+
+if __name__ == "__main__":
+    flags = [("-a:","assignname",None),("-m","mastermanifest",False)]  # backdoor for staff use on non-repo directory
+    op = util.OptionParser(flags)
+    try:
+        (args, remaining) = op.process_options(sys.argv[1:])
+        asserts.usage(len(remaining) <= 1, "unexpected additional arguments '%s' after custom file" % ' '.join(remaining[1:]))
+    except UsageError as ex:
+        ui.exit_error("Incorrect %s usage: %s" % (os.path.basename(sys.argv[0]), str(ex)))
+
+    util.unbuffer_stdout()
+    path = os.getcwd()
+    custom_file = remaining[0] if remaining else None
+    if args.assignname:
+        local_git = None
+        reponame = util.unique_match(args.assignname, course.assign_names()) or args.assignname
+        quarter = None
+    else:
+        local_git = git.Git(path)
+        reponame = local_git.read_reponame()
+        quarter = local_git.read_quarter()
+        if reponame is None:
+            err = "Directory %s does not contain a valid course repo." % path
+            ui.exit_done("%s\nPlease change to your project directory and re-run submit." % err)
+
+    if not manifest.sanity_check_exists(reponame):
+        ui.exit_done("There is no sanity check for %s." % reponame)
+
+    print "Will run %s sanity check for %s in current directory %s." % ("custom" if custom_file else "default", reponame, gen.shortpath(path))
+    if custom_file:  # optional arg is name of file that lists custom test cases
+        (custom_tests, si) = parse_custom_test_file(custom_file, reponame)
+        if not si: validate_custom_tests(custom_tests, path)
+        print "\nNow running custom test cases against your program"
+    else:
+        custom_tests = None
+    (nfailures, nrun) = manifest.run_sanity_check(path, reponame, tests=custom_tests, usemaster=args.mastermanifest)
+    what = ("custom test cases read from file '%s'" % custom_file) if custom_tests else "default sanity check cases"
+    if nfailures == 0:
+        msg = "\n%s This project passes all of the %s.\n" % (results.random_cheer().upper(), what)
+    else:
+        msg = "\nThis project passes %d of the %d %s.\n" % (nrun - nfailures, nrun, what)
+    print msg
+
+    # Attempt to push, but no complaint to user if not success (but do inform staff)
+    sunet = gen.username()
+    dst_path = Repo.push_path(reponame, sunet)
+    if sunet not in gen.STAFF and local_git and os.path.exists(dst_path) and quarter == gen.QUARTER:
+        try:
+            if local_git.is_locked(): local_git.unlock()
+            local_git.commit_if_dirty(msg)  # sanitycheck outcome used as commit msg
+            local_git.auto_push(dst_path)
+        except Exception as ex:
+            hooks.ExceptHook.report_error()

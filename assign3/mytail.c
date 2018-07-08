@@ -9,31 +9,28 @@
 void print_last_n(FILE *fp, int n)
 {
     char *line;
-    char *arr[n]; // array with each element as a pointer to head of a string
-    int i;
-
-    //keep reading file until meet EOF
-    for (i = 0; (line = read_line(fp)) != NULL; i++) {
-        if (i >= n) free(arr[i % n]); // if i start to replace other element, release memory before
-        arr[i % n] = line; // i mod n achieve circular buffer
+    char *arr[n];
+    int i = 0;
+    while ((line = read_line(fp)) != NULL)
+    {
+        // if (i >= n) free(arr[i % n]);
+        arr[i % n] = line;
+        i++;
     }
-
-    int first = i % n; // first element index for output
-
-    // print [    XXXXX] in the array
-    if (i > n) { // the last line has replace some part of array
-        for (int j = first; j < n; j++) {
+    int idx = i % n;
+    if (i > n)
+    {   
+        // print out the last part of the array first
+        for (int j = idx; j < n; j++)
+        {
             printf("%s\n", arr[j]);
-            free(arr[j]);
         }
     }
 
-    // print [XXXX     ] in array
-    for (int k = 0; k < first; k++) {
-        printf("%s\n", arr[k]);
-        free(arr[k]);
+    for (int j = 0; j < idx; j++)
+    {
+        printf("%s\n", arr[j]);
     }
-     
 }
 
 // ------- DO NOT EDIT ANY CODE BELOW THIS LINE (but do add comments!)  -------

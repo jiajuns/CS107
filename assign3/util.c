@@ -11,24 +11,26 @@
 char *read_line(FILE *fp)
 {
     // allocate minimum size of bytes for a pointers
-    char *rp = malloc(MINIMUM_SIZE);
-    int i = 0;
-    int length = 1;
+    char *rp = calloc(MINIMUM_SIZE, 1);
+    char *buf = malloc(MINIMUM_SIZE);
+    int i = 1;
+    int length;
 
     while (1)
     {
-        i++;   
         rp = realloc(rp, i*MINIMUM_SIZE);
-        rp = fgets(rp, i*MINIMUM_SIZE, fp);
-        if (rp == NULL) return NULL;  // case 5
+        buf = fgets(buf, MINIMUM_SIZE, fp);
+        if (buf == NULL) return NULL;  // case 5
+        strcat(rp, buf);
         length = strlen(rp);
-        if (rp[length - 1] == '\n') break;
+        if (rp[length - 1] == '\n') 
+        {
+            rp[length - 1] = '\0';
+            break;
+        }
+        i++;
     }
     
-    // replace '\n' at the end with '\0'
-    if (rp[length - 1] == '\n') { // case 4
-        rp[length - 1] = '\0';
-    }
     return rp;
 }
 
@@ -38,4 +40,3 @@ char *read_line(FILE *fp)
 //case 4. XXXXXXXXXXXXXXXXXXXXXEOF (>32)
 //case 5. EOF
 //case 6. XXXXXXX\nEOF
-

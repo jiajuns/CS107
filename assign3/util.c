@@ -10,29 +10,28 @@
 
 char *read_line(FILE *fp)
 {
-    char *res = calloc(MINIMUM_SIZE, 1); // initialize memory with all 0
-    char *buf = malloc(MINIMUM_SIZE); // reserve memory but not initialize
+    // allocate minimum size of bytes for a pointers
+    char *rp = malloc(MINIMUM_SIZE);
+    int i = 0;
+    int length = 1;
 
-    // loop until res ends with '\n'
-    for (int i = 0; res[strlen(res) - 1] != '\n'; i++) { // case1,3
-        if (i > 0) { // allocate more memory for res
-            res = realloc(res, MINIMUM_SIZE * (i+1)); // case 2
-        }
-        buf = fgets(buf, MINIMUM_SIZE, fp);
-        // if fgets return NULL, it meets EOF or other errors
-        if (buf == NULL) return NULL; // case 5
-        // concat fixed sized(32) buf to res
-        strcat(res, buf);      
+    while (1)
+    {
+        i++;   
+        rp = realloc(rp, i*MINIMUM_SIZE);
+        rp = fgets(rp, i*MINIMUM_SIZE, fp);
+        if (rp == NULL) return NULL;  // case 5
+        length = strlen(rp);
+        if (rp[length - 1] == '\n') break;
     }
     
-    free(buf);
-
     // replace '\n' at the end with '\0'
-    if (res[strlen(res) - 1] == '\n') { // case 4
-        res[strlen(res) - 1] = '\0';
+    if (rp[length - 1] == '\n') { // case 4
+        rp[length - 1] = '\0';
     }
-    return res;
+    return rp;
 }
+
 //case 1. XXXXX\n (<32 length)
 //case 2. XXXXXXXXXXXXXXXXXXXXXXXXXXXX\n (> 32 length)
 //case 3. \n

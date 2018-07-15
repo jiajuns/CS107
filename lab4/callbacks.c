@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
     int nwords = sizeof(words)/sizeof(words[0]);
     printf("\nSort strings: ");
     qsort(words, nwords, sizeof(words[0]), string_cmpfn);
-    for (int i = 1; i < nwords; i++) printf("%s ", words[i]);
+    for (int i = 0; i < nwords; i++) printf("%s ", words[i]);
 
     return 0;
 }

@@ -73,7 +73,7 @@ void test_bsearch(void)
     printf("\nSorted by first letter: ");
     for (int i = 0; i < n; i++) printf("%s ", words[i]);
     printf("\nLooking for a word that starts with %s: ", key);
-    char **found = bsearch(key, words, n, sizeof(words[0]), cmp_asymmetric); // search
+    char **found = bsearch(&key, words, n, sizeof(words[0]), cmp_first_char); // search
     printf("found %s\n", found ? *found : "none");
 }
 

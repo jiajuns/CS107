@@ -28,3 +28,13 @@
 4. returning pointer to a value rather than the value itself can make the `gfind_max` function more generic. Since the `gfind_max` dose not know the datatype it handles, it cannot cast the pointer to a value correctly.
 
 5. the clinet can repack the `compar` function and add a negative sign inside the repacked function
+
+6. there is no compile error or runtime error because those function dose not care the input argument type. It treats all argument as `void *`. Even `valgrind` dose not show any error.
+
+7. the error is due to wrong variable bytes size. the error the max value comes from read memory stack at 1 increment. This result unpredicted value from memory bytes.
+
+8. it compares pointer itself, the last element has the largest pointer value.
+
+9. program crashes at `cmp_first_char` function.
+
+10. The reason for creating this hack is due to `bsearch` functions requires `key` and `words` have same variable type. Before the fix, `key` is a pointer to `char` and `words[0]` is a pointer that pointing to another pointer.  

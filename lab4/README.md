@@ -37,4 +37,19 @@
 
 9. program crashes at `cmp_first_char` function.
 
-10. The reason for creating this hack is due to `bsearch` functions requires `key` and `words` have same variable type. Before the fix, `key` is a pointer to `char` and `words[0]` is a pointer that pointing to another pointer.  
+10. The reason for creating this hack is due to `bsearch` functions requires `key` and `words` have same variable type. Before the fix, `key` is a pointer to `char` and `words[0]` is a pointer that pointing to another pointer. 
+
+
+## memmove
+
+1. internally it manipulates the pointer as `char` because it can move 1 byte at a time and use 1 byte as a basic unit.
+
+2. it handles two pointer pointing to the same location.
+
+3. it handles the case when `src` and `dest` dose not overlap with each other. According to `memcpy` documentation:
+    
+    The behavior is undefined if access occurs beyond the end of the dest array. If the objects overlap (which is a violation of the restrict contract) (since C99), the behavior is undefined.
+
+4. `if/else` deals with `src` and `dest` overlapping with each other. One is `src` in front of `dest` and the other is `dest` in the front. Both of them cannot be dealt with `memcpy`.
+
+5. `musl_memmove(NULL, "cs107", 0)` dose not crash because `memcpy` dose not actually do any copy. 

@@ -1,0 +1,24 @@
+# File: custom_tests
+# ------------------
+# This file contains a list of custom tests to be run by the sanity check tool.
+# Refer to http://cs107.stanford.edu/sanitycheck.html for more information.
+#
+# Below are example custom tests, you can edit this file to change or add new tests.
+
+myls -a /afs/ir/class/cs107/samples
+myls /afs/ir/class/cs107/samples
+myls .
+myls -a -z .
+myls -z .
+
+test_binsert 1 1 1 1 1 1
+test_binsert 1 2 3 4 5 6
+test_binsert 6 5 4 3 2 1
+test_binsert 3 4 4 2 1 5
+test_binsert 2
+
+mysort -n < samples/numbers
+mysort -n samples/numbers
+mysort -l -r < samples/numbers
+mysort -u -r samples/numbers
+mysort -u -l < samples/numbers

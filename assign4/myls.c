@@ -21,15 +21,6 @@ int sel_all(const struct dirent *d)
     return 1;
 }
 
-int sel_nodot(const struct dirent *d)
-{
-    if (d->d_name[0] == '.') {
-        return 0;
-    } else {
-        return 1;
-    }
-}
-
 int cmp_name(const struct dirent **d1, const struct dirent **d2)
 {
     return strcmp((*d1)->d_name, (*d2)->d_name);
@@ -37,54 +28,69 @@ int cmp_name(const struct dirent **d1, const struct dirent **d2)
 
 int cmp_type(const struct dirent **d1, const struct dirent **d2)
 {
-    if (is_dir(*d1) && !is_dir(*d2)) {
-        return -1;
-    } else if (!is_dir(*d1) && is_dir(*d2)) {
+    if (is_dir(*d1) & !is_dir(*d2))
+    {
         return 1;
+    } else if (!is_dir(*d1) & is_dir(*d2))
+    {
+        return -1;
     } else {
-        return strcmp((*d1)->d_name, (*d2)->d_name);
+        return cmp_name(d1, d2);
     }
-    
 }
 
 
-
+int sel_nodot(const struct dirent *d)
+{
+    if (d->d_name[0] == '.')
+    {
+        return 0;
+    } else {
+        return 1;
+    }
+}
 
 void ls(const char *dirpath, int filter, int order)
 {
-    // allocate momory of one pointer for scandir output
-    struct dirent ***res = malloc(sizeof(char*));
-    int cnt;
-    if (filter == INCLUDE_DOT && order == SORT_BY_NAME) {
-        cnt = scandir(dirpath, res, sel_all, cmp_name);
-    } else if (filter == INCLUDE_DOT && order == SORT_BY_TYPE) {
-        cnt = scandir(dirpath, res, sel_all, cmp_type);
-    } else if (filter == EXCLUDE_DOT && order == SORT_BY_NAME) {
-        cnt = scandir(dirpath, res, sel_nodot, cmp_name);
-    } else if (filter == EXCLUDE_DOT && order == SORT_BY_TYPE) {
-        cnt = scandir(dirpath, res, sel_nodot, cmp_type);
+    struct dirent ***dirnames = malloc(sizeof(char*));
+    int cnt = 0;
+
+    if (filter == EXCLUDE_DOT && order == SORT_BY_NAME)
+    {
+        cnt = scandir(dirpath, dirnames, sel_nodot, cmp_name);
+    }
+    else if (filter == INCLUDE_DOT && order == SORT_BY_NAME)
+    {
+        cnt = scandir(dirpath, dirnames, sel_all, cmp_name);
+    }
+    else if (filter == EXCLUDE_DOT && order == SORT_BY_TYPE)
+    {
+        cnt = scandir(dirpath, dirnames, sel_nodot, cmp_type);
+    }
+    else if (filter == INCLUDE_DOT && order == SORT_BY_TYPE)
+    {
+        cnt = scandir(dirpath, dirnames, sel_all, cmp_type);
     }
 
-    if (cnt == -1) {
+    if (!cnt) {
         printf("./myls: cannot access %s: No such file or directory", dirpath);
         return;
     }
- 
-    // declare a pointer to store the dir-entry name
+
     struct dirent *de;
 
-    // loop through each dir-entry and store name in str_array
-    for (int i = 0; i < cnt; i++) {
-        de = (*res)[i];
-        if (is_dir(de)) {
+    for (int i=0; i<cnt; i++){
+        de = (*dirnames)[i];
+        if (is_dir(de))
+        {
             printf("%s/\n", de->d_name);
-        } else {
+        } else 
+        {
             printf("%s\n", de->d_name);
         }
     }
-    
-    
 }
+
 
 int main(int argc, char *argv[])
 {

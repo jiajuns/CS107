@@ -9,63 +9,68 @@
 #define MAX_LINE_LEN 4096
 #define MIN_NLINES 100
 
-typedef int (*cmp_fn_t)(const void *p, const void *q);
+typedef int (*cmp_fn_t)(const void *, const void *);
 
-int cmp_pstr(const void *p, const void *q)
-{
-    return strcmp(*(const char **)p, *(const char **)q);
+int cmp_pstr(const void *p1, const void *p2)
+{   
+    return strcmp(*(const char **)p1, *(const char **)p2);
 }
 
-int cmp_pstr_len(const void *p, const void *q)
+int cmp_pstr_len(const void *p1, const void *p2)
 {
-    return strlen(*(const char **)p) - strlen(*(const char **)q);
+    return strlen(*(const char **)p1) - strlen(*(const char **)p2);
 }
 
-int cmp_pstr_numeric(const void *p, const void *q)
+int cmp_pstr_numeric(const void *p1, const void *p2)
 {
-    return atoi(*(const char **)p) - atoi(*(const char **)q);
+    return atoi(*(const char **)p1) - atoi(*(const char **)p2); 
 }
 
 void sort_lines(FILE *fp, cmp_fn_t cmp, bool uniq, bool reverse)
-{
-    // create an array of string in heap for lines with MIN_NLINES
-    char **arr = malloc(MIN_NLINES * sizeof(char *));
-    char *line = malloc(MAX_LINE_LEN);
-    char *dupline = malloc(MAX_LINE_LEN);
-    size_t len = 0;
+{   
+    char *line = malloc(MAX_LINE_LEN * sizeof(char));
+    char **arr = malloc(MAX_LINE_LEN * sizeof(char *));
+    char *dupline;
+    
+    size_t length = 0;
     size_t limit = MIN_NLINES;
-    // use fgets to read a line with MAX_LINE_LEN, then strdup to store into heap
-    while ((line = fgets(line, MAX_LINE_LEN, fp)) != NULL) {
-        if (len >= limit) {
-            limit *= 2;
-            arr = realloc(arr, limit * sizeof(char *));
-        }
+    while ((line = fgets(line, MAX_LINE_LEN, fp)) != NULL)
+    {
         dupline = strdup(line);
-        if (uniq) {
-            binsert(&dupline, arr, &len, sizeof(*arr), cmp);
+        if (uniq)
+        {
+            binsert(&dupline, arr, &length, sizeof(char *), cmp);
         } else {
-            arr[len] = dupline;
-            len++;
+            arr[length] = dupline;
+            length += 1;
         }
-    }
-    // if not uniq, use qsort to sort array
-    if (!uniq) {
-        qsort(arr, len, sizeof(*arr), (int (*)(const void *, const void *))cmp);
+
+        if (length >= limit)
+        {
+            limit *= 2;
+            arr = realloc(arr, limit*sizeof(char *));
+        }
     }
 
-    // print based on reverse or not
-    if (!reverse) {
-        for (int i = 0; i < len; i++) {
+    if (!uniq)
+    {
+        qsort(arr, length, sizeof(char *), cmp);
+    }
+
+    if (!reverse)
+    {
+        for (int i=0; i<length; i++)
+        {
             printf("%s", arr[i]);
         }
     } else {
-        for (int i = len - 1; i >= 0; i-- ) {
+        for (int i=length-1; i>=0; i--)
+        {
             printf("%s", arr[i]);
         }
     }
     free(arr);
     free(line);
-    free(dupline);
 }
 
 int main(int argc, char *argv[])

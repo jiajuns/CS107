@@ -17,8 +17,10 @@ void *binsert(const void *key, void *base, size_t *nel, size_t width, int (*cmp)
         void *p = (char *)base + (nremain >> 1) * width;
         int sign = cmp(key, p);
         if (sign == 0)
+        {
             found = p;
             break;
+        }
         if (sign > 0) {  /* key > p: move right */
             base = (char *)p + width;
             nremain--;
@@ -29,11 +31,9 @@ void *binsert(const void *key, void *base, size_t *nel, size_t width, int (*cmp)
     {
         return found;
     } else {
-        void *end = (char *)base + width;
-        memmove(end, base, width*(*nel-1)-((char *)base - (char *)start));
+        memmove((char *)base + width, base, width*(*nel)-((char *)base - (char *)start));
         *nel += 1;
-        memmove(base, key, width);
-        return base;
+        return memmove(base, key, width);
     }
 }
 
